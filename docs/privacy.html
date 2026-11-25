@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy &amp; AI Data Policy — RubricCheck QA</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='6' fill='%230D5C48'/%3E%3Cpath d='M14 5.5L21 8.5V14.2C21 18.4 17.9 21.8 14 23C10.1 21.8 7 18.4 7 14.2V8.5L14 5.5Z' fill='none' stroke='%23fff' stroke-width='2'/%3E%3Cpath d='M11 14.2L13.1 16.3L17.4 11.8' fill='none' stroke='%237CE3C4' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="./index.html">RubricCheck QA</a>
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="./index.html">Product</a>
+          <a href="./pricing.html">Pricing</a>
+          <a class="active" href="./privacy.html">AI Privacy</a>
+          <a href="./support.html">Support</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="section section-white">
+      <div class="container prose">
+        <h1 style="max-width: none">Privacy Policy &amp; AI Data Usage Disclosure</h1>
+        <p class="mono" style="font-size: 13px; color: var(--ink-3)">Effective Date: November 25, 2026</p>
+
+        <div class="callout">
+          <strong>Core Commitments:</strong> (1) Customer Zendesk tickets and attachments are
+          <strong>never used to train AI models</strong>. (2) Ticket attachments (screenshots,
+          images, and PDFs) and raw message transcripts are processed strictly in
+          <strong>transient RAM</strong> and are <strong>never written to disk, object storage, or
+          our database</strong>.
+        </div>
+
+        <h2>1. Data We Process &amp; Data Minimization</h2>
+        <p>
+          When your Zendesk administrator connects RubricCheck QA via Zendesk Global OAuth 2.0, we
+          request only minimal granular scopes: <span class="mono">tickets:read</span>,
+          <span class="mono">tickets:write</span>, <span class="mono">webhooks:read</span>, and
+          <span class="mono">webhooks:write</span>.
+        </p>
+        <ul>
+          <li><strong>Transiently processed (RAM-only, immediately discarded):</strong> Ticket comment bodies and supported image/PDF attachments fetched for evaluation.</li>
+          <li><strong>Persisted metadata only:</strong> Zendesk subdomain, encrypted OAuth tokens (AES-256-GCM), configured QA rubrics, numeric evaluation scores, boolean PII category flags, attachment IDs/filenames (needed to trigger Zendesk Comment Redaction), and Paddle subscription status.</li>
+        </ul>
+
+        <h2>2. AI Processing &amp; Zero Model Training Compliance</h2>
+        <p>
+          RubricCheck QA evaluates tickets using Google's Gemini Decisions API
+          (<span class="mono">gemini-decision-1</span>, with fallback to
+          <span class="mono">gemini-3.5-flash-lite</span> using <span class="mono">store: false</span>)
+          strictly under a <strong>Google Paid Tier API</strong> agreement. Under Google's Paid Tier
+          API Terms, customer inputs and outputs are <strong>never used to train or improve Google
+          AI models</strong>, in full compliance with Zendesk's Developer Terms and AI usage rules.
+          Standard Google Paid API abuse-monitoring safeguards apply; RubricCheck QA itself retains
+          zero copies of submitted media or conversation text.
+        </p>
+
+        <h2>3. Sub-Processors</h2>
+        <ul>
+          <li><strong>Google LLC (Google Cloud Run &amp; Gemini Paid API):</strong> Application hosting and stateless multimodal rubric/PII scoring.</li>
+          <li><strong>Paddle.com Market Limited:</strong> Merchant of Record handling subscription billing, payment methods, invoicing, and global VAT/Sales Tax compliance. RubricCheck QA never stores credit card numbers.</li>
+        </ul>
+
+        <h2>4. Security &amp; Encryption</h2>
+        <ul>
+          <li>All data in transit is encrypted over TLS 1.2+.</li>
+          <li>Zendesk OAuth access tokens, refresh tokens, and webhook signing secrets are encrypted at rest with AES-256-GCM.</li>
+          <li>ZAF iframe requests are authenticated using RS256 signed URL JWTs verified against your Zendesk app public key; inbound Zendesk and Paddle webhooks are verified via HMAC-SHA256 signatures.</li>
+        </ul>
+
+        <h2>5. Retention, Revocation &amp; GDPR Rights</h2>
+        <p>
+          Administrators may revoke Zendesk OAuth access at any time in Zendesk Admin Center. Upon
+          uninstallation or written deletion request to
+          <a href="mailto:privacy@rubriccheck.app">privacy@rubriccheck.app</a>, all tenant records,
+          rubrics, encrypted tokens, and evaluation metadata are permanently erased within 72 hours.
+        </p>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <div>&copy; 2026 RubricCheck QA.</div>
+        <div class="footer-links">
+          <a href="./index.html">Product</a>
+          <a href="./pricing.html">Pricing</a>
+          <a href="./terms.html">Terms of Service</a>
+          <a href="./support.html">Support</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

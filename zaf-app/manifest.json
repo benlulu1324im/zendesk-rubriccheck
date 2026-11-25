@@ -1,0 +1,33 @@
+{
+  "name": "RubricCheck QA",
+  "author": {
+    "name": "RubricCheck QA",
+    "email": "support@rubriccheck.app",
+    "url": "https://benlulu1324im.github.io/zendesk-rubriccheck/"
+  },
+  "defaultLocale": "en",
+  "private": false,
+  "version": "1.0.0",
+  "frameworkVersion": "2.0",
+  "signedUrls": false,
+  "termsConditionsURL": "https://benlulu1324im.github.io/zendesk-rubriccheck/terms.html",
+  "location": {
+    "support": {
+      "ticket_sidebar": {
+        "url": "assets/iframe.html?view=sidebar",
+        "flexible": true
+      },
+      "nav_bar": {
+        "url": "assets/iframe.html?view=dashboard"
+      }
+    }
+  },
+  "parameters": [
+    {
+      "name": "backend_url",
+      "type": "text",
+      "required": false,
+      "default": "https://api.rubriccheck.app"
+    }
+  ]
+}

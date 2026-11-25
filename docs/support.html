@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Support &amp; Setup Guide — RubricCheck QA</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='6' fill='%230D5C48'/%3E%3Cpath d='M14 5.5L21 8.5V14.2C21 18.4 17.9 21.8 14 23C10.1 21.8 7 18.4 7 14.2V8.5L14 5.5Z' fill='none' stroke='%23fff' stroke-width='2'/%3E%3Cpath d='M11 14.2L13.1 16.3L17.4 11.8' fill='none' stroke='%237CE3C4' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="./index.html">RubricCheck QA</a>
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="./index.html">Product</a>
+          <a href="./pricing.html">Pricing</a>
+          <a href="./privacy.html">AI Privacy</a>
+          <a class="active" href="./support.html">Support</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="section section-white">
+      <div class="container prose">
+        <h1 style="max-width: none">Setup Guide &amp; Support</h1>
+        <p class="lead">Get RubricCheck QA running on your Zendesk Support instance in under 3 minutes.</p>
+
+        <h2>1. Install &amp; Authorize via Zendesk Global OAuth</h2>
+        <ol>
+          <li>Install <strong>RubricCheck QA</strong> from the Zendesk Marketplace.</li>
+          <li>Click the RubricCheck shield icon in Zendesk's left navigation bar.</li>
+          <li>Open <strong>Billing &amp; Connection</strong>, confirm your subdomain, and click <strong>Connect Zendesk OAuth</strong>.</li>
+          <li>Approve the minimal granular permissions: <span class="mono">tickets:read</span>, <span class="mono">tickets:write</span>, <span class="mono">webhooks:read</span>, <span class="mono">webhooks:write</span>.</li>
+        </ol>
+
+        <h2>2. Automatic Event Webhooks</h2>
+        <p>
+          Once OAuth is approved, RubricCheck QA automatically registers an HMAC-signed Zendesk
+          webhook listening to <span class="mono">ticket.attachment_linked_to_comment</span>,
+          <span class="mono">ticket.comment_added</span>,
+          <span class="mono">ticket.status_changed</span>, and
+          <span class="mono">ticket.attachment_redacted_from_comment</span>.
+        </p>
+
+        <h2>3. Redacting Exposed Screenshots &amp; PDFs</h2>
+        <p>
+          Whenever a screenshot or PDF contains a credit card, passport/ID, SSN, live API key,
+          password, or IBAN, RubricCheck QA tags the ticket <span class="mono">rc_pii_exposed</span>
+          and highlights it in the ticket sidebar and Open PII Queue. Clicking
+          <strong>Redact attachment</strong> calls Zendesk's Comment Redaction API
+          (<span class="mono">PUT /api/v2/comment_redactions/{comment_id}</span>) to permanently
+          scrub the file — even on closed tickets.
+        </p>
+
+        <h2>4. Need Help?</h2>
+        <p>
+          Email <a href="mailto:support@rubriccheck.app">support@rubriccheck.app</a> with your
+          Zendesk subdomain. Typical response time: under 1 business day.
+        </p>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <div>&copy; 2026 RubricCheck QA.</div>
+        <div class="footer-links">
+          <a href="./index.html">Product</a>
+          <a href="./pricing.html">Pricing</a>
+          <a href="./privacy.html">Privacy &amp; AI Policy</a>
+          <a href="./terms.html">Terms of Service</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

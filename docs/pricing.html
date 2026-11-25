@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pricing — RubricCheck QA for Zendesk</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='6' fill='%230D5C48'/%3E%3Cpath d='M14 5.5L21 8.5V14.2C21 18.4 17.9 21.8 14 23C10.1 21.8 7 18.4 7 14.2V8.5L14 5.5Z' fill='none' stroke='%23fff' stroke-width='2'/%3E%3Cpath d='M11 14.2L13.1 16.3L17.4 11.8' fill='none' stroke='%237CE3C4' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <meta name="description" content="Transparent flat-rate pricing for RubricCheck QA on Zendesk Marketplace. Unlimited agents on every tier." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="./index.html">
+          <svg width="26" height="26" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <rect width="28" height="28" rx="6" fill="#0D5C48" />
+            <path d="M14 5.5L21 8.5V14.2C21 18.4 17.9 21.8 14 23C10.1 21.8 7 18.4 7 14.2V8.5L14 5.5Z" stroke="#fff" stroke-width="1.9" stroke-linejoin="round" />
+            <path d="M11 14.2L13.1 16.3L17.4 11.8" stroke="#7CE3C4" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          RubricCheck QA
+        </a>
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="./index.html">Product</a>
+          <a class="active" href="./pricing.html">Pricing</a>
+          <a href="./privacy.html">AI Privacy</a>
+          <a href="./support.html">Support</a>
+        </nav>
+        <div class="nav-cta">
+          <a class="btn btn-primary btn-sm" href="./support.html">Install guide</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="section">
+      <div class="container">
+        <h1 style="max-width: 24ch">Flat per-account pricing. Unlimited Zendesk agents.</h1>
+        <p class="lead">
+          Free to install from the Zendesk Marketplace with 100 evaluated tickets every month. Upgrade
+          inside your Zendesk dashboard anytime — all billing and global tax/VAT invoices are handled
+          securely by Paddle (our Merchant of Record).
+        </p>
+
+        <div class="toggle-row" role="group" aria-label="Billing interval">
+          <button id="btn-monthly" class="toggle-btn" type="button">Monthly</button>
+          <button id="btn-annual" class="toggle-btn active" type="button">Annual (Save ~15%)</button>
+        </div>
+
+        <div class="pricing-grid">
+          <article class="plan">
+            <h2 style="font-size: 20px; margin: 0">Free</h2>
+            <div class="plan-price mono">$0<span style="font-size: 14px; font-weight: 500; color: var(--ink-3)">/mo</span></div>
+            <div style="font-size: 13.5px; color: var(--ink-2)">Forever free starter tier</div>
+            <ul>
+              <li>Up to 100 evaluated tickets / month</li>
+              <li>Unlimited Zendesk agents</li>
+              <li>1 custom QA rubric (up to 5 criteria)</li>
+              <li>Screenshot &amp; PDF PII flagging + 1-click redaction</li>
+              <li>Auto-tagging in Zendesk</li>
+            </ul>
+            <a class="btn btn-secondary" href="./support.html">Install from Marketplace</a>
+          </article>
+
+          <article class="plan">
+            <h2 style="font-size: 20px; margin: 0">Starter</h2>
+            <div class="plan-price mono"><span data-monthly="79" data-annual="69">$69</span><span style="font-size: 14px; font-weight: 500; color: var(--ink-3)">/mo</span></div>
+            <div style="font-size: 13.5px; color: var(--ink-2)" data-note-monthly="Billed monthly" data-note-annual="Billed $828 annually">Billed $828 annually</div>
+            <ul>
+              <li>Up to 1,500 evaluated tickets / month</li>
+              <li>Unlimited Zendesk agents</li>
+              <li>Up to 3 custom QA rubrics (15 criteria each)</li>
+              <li>Real-time PII alerts + 1-click redaction</li>
+              <li>Internal note warnings on exposed images</li>
+            </ul>
+            <a class="btn btn-secondary" href="./support.html">Upgrade inside Zendesk</a>
+          </article>
+
+          <article class="plan featured">
+            <h2 style="font-size: 20px; margin: 0">Growth</h2>
+            <div class="plan-price mono"><span data-monthly="149" data-annual="129">$129</span><span style="font-size: 14px; font-weight: 500; color: var(--ink-3)">/mo</span></div>
+            <div style="font-size: 13.5px; color: var(--ink-2)" data-note-monthly="Billed monthly" data-note-annual="Billed $1,548 annually">Billed $1,548 annually</div>
+            <ul>
+              <li>Up to 5,000 evaluated tickets / month</li>
+              <li>Unlimited Zendesk agents</li>
+              <li>Unlimited custom QA rubrics</li>
+              <li><strong>Opt-in automatic PII redaction</strong> (off by default, &ge;0.95 confidence floor)</li>
+              <li>CSV export for QA &amp; compliance audits</li>
+            </ul>
+            <a class="btn btn-primary" href="./support.html">Upgrade inside Zendesk</a>
+          </article>
+
+          <article class="plan">
+            <h2 style="font-size: 20px; margin: 0">Scale</h2>
+            <div class="plan-price mono"><span data-monthly="299" data-annual="249">$249</span><span style="font-size: 14px; font-weight: 500; color: var(--ink-3)">/mo</span></div>
+            <div style="font-size: 13.5px; color: var(--ink-2)" data-note-monthly="Billed monthly" data-note-annual="Billed $2,988 annually">Billed $2,988 annually</div>
+            <ul>
+              <li>Up to 15,000 evaluated tickets / month</li>
+              <li>Unlimited Zendesk agents</li>
+              <li>Unlimited rubrics &amp; multi-brand mapping</li>
+              <li>Auto-redaction + custom confidence thresholds</li>
+              <li>Priority processing &amp; dedicated onboarding</li>
+            </ul>
+            <a class="btn btn-secondary" href="./support.html">Upgrade inside Zendesk</a>
+          </article>
+        </div>
+
+        <div class="callout" style="margin-top: 32px">
+          <strong>Marketplace Transparency Notice:</strong> RubricCheck QA is free to install from
+          the Zendesk Marketplace and includes 100 free ticket evaluations per month. Additional
+          monthly or annual fees apply only if you upgrade to Starter, Growth, or Scale inside the
+          app's Billing tab via Paddle Checkout. You can cancel or switch plans anytime through the
+          self-service Paddle Customer Portal.
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <div>&copy; 2026 RubricCheck QA. Merchant of Record billing via Paddle.com.</div>
+        <div class="footer-links">
+          <a href="./index.html">Product</a>
+          <a href="./privacy.html">Privacy &amp; AI Policy</a>
+          <a href="./terms.html">Terms of Service</a>
+          <a href="./support.html">Support</a>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      (function () {
+        var btnM = document.getElementById('btn-monthly');
+        var btnA = document.getElementById('btn-annual');
+        function setMode(annual) {
+          btnA.classList.toggle('active', annual);
+          btnM.classList.toggle('active', !annual);
+          document.querySelectorAll('[data-monthly]').forEach(function (el) {
+            el.textContent = '$' + (annual ? el.getAttribute('data-annual') : el.getAttribute('data-monthly'));
+          });
+          document.querySelectorAll('[data-note-monthly]').forEach(function (el) {
+            el.textContent = annual ? el.getAttribute('data-note-annual') : el.getAttribute('data-note-monthly');
+          });
+        }
+        btnM.addEventListener('click', function () { setMode(false); });
+        btnA.addEventListener('click', function () { setMode(true); });
+      })();
+    </script>
+  </body>
+</html>

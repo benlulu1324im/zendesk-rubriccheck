@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RubricCheck QA</title>
+    <script src="https://static.zdassets.com/zendesk_app_framework_sdk/2.0/zaf_sdk.min.js"></script>
+    <style>
+      html, body, iframe { margin: 0; padding: 0; width: 100%; height: 100%; border: 0; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f6f8f9; color: #0f1c24; }
+      .loader { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 20px; text-align: center; font-size: 13px; color: #485b67; }
+    </style>
+  </head>
+  <body>
+    <div id="mount" class="loader">Connecting RubricCheck QA…</div>
+    <script>
+      (function () {
+        var client = ZAFClient.init();
+        var params = new URLSearchParams(window.location.search);
+        var view = params.get('view') === 'dashboard' ? 'dashboard' : 'sidebar';
+        client.invoke('resize', { width: '100%', height: view === 'sidebar' ? '580px' : '900px' });
+        Promise.all([client.metadata(), client.context(), client.get('ticket.id').catch(function () { return {}; })])
+          .then(function (results) {
+            var meta = results[0] || {};
+            var ctx = results[1] || {};
+            var ticketData = results[2] || {};
+            var baseUrl = (meta.settings && meta.settings.backend_url ? meta.settings.backend_url : 'http://localhost:5173').replace(/\/$/, '');
+            var ticketId = ticketData['ticket.id'] ? '&ticket_id=' + encodeURIComponent(ticketData['ticket.id']) : '';
+            var subdomain = ctx.account && ctx.account.subdomain ? '&subdomain=' + encodeURIComponent(ctx.account.subdomain) : '';
+            var iframe = document.createElement('iframe');
+            iframe.src = baseUrl + '/?view=' + encodeURIComponent(view) + ticketId + subdomain;
+            iframe.setAttribute('title', 'RubricCheck QA');
+            document.body.innerHTML = '';
+            document.body.appendChild(iframe);
+          })
+          .catch(function (err) {
+            document.getElementById('mount').textContent = 'Unable to initialize ZAF frame: ' + (err && err.message ? err.message : 'unknown error');
+          });
+      })();
+    </script>
+  </body>
+</html>

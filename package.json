@@ -1,0 +1,27 @@
+{
+  "name": "zendesk-rubriccheck",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RubricCheck QA — Flat-rate SMB Automated QA & Multimodal Screenshot/PDF PII Guardrail for Zendesk Marketplace",
+  "workspaces": [
+    "packages/shared",
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace=backend",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "build": "npm run build --workspace=packages/shared && npm run build --workspace=backend && npm run build --workspace=frontend",
+    "typecheck": "npm run typecheck --workspace=packages/shared && npm run typecheck --workspace=backend && npm run typecheck --workspace=frontend",
+    "test": "npm run test --workspace=packages/shared && npm run test --workspace=backend",
+    "zaf:validate": "npx --yes --ignore-scripts @zendesk/zcli@2.5.0 apps:validate zaf-app",
+    "zaf:package": "npx --yes --ignore-scripts @zendesk/zcli@2.5.0 apps:package zaf-app"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2",
+    "vitest": "^3.1.2"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "app": {
+    "name": "RubricCheck QA",
+    "short_description": "Flat-rate automated QA scoring and multimodal screenshot/PDF PII guardrail for Zendesk.",
+    "long_description": "RubricCheck QA brings affordable, flat-rate automated QA and real-time screenshot/PDF PII protection to SMB support teams of 5–40+ agents.\n\n**Why teams switch to RubricCheck QA:**\n- **No per-agent tax:** Flat per-account plans with unlimited agents (Free tier up to 100 tickets/month).\n- **Multimodal Screenshot & PDF PII Guardrail:** Automatically scans attached images, screenshots, and PDFs for exposed credit cards, government IDs/passports, SSNs, API keys, and passwords — and lets agents permanently redact exposed files in one click using Zendesk's Comment Redaction API.\n- **Custom QA Rubrics:** Combine 0–4 scale criteria with strict Yes/No compliance checks, auto-tag tickets (`rc_qa_pass`, `rc_qa_review`, `rc_pii_exposed`), and track team quality trends from the built-in Zendesk nav bar dashboard.\n- **Privacy-First AI:** Powered by Google Gemini Decisions API on Paid Tier (zero model training on customer data) with strictly transient RAM-only attachment scanning and zero image storage.",
+    "installation_instructions": "1. Install RubricCheck QA from the Zendesk Marketplace.\n2. Open the RubricCheck QA icon in your Zendesk left navigation bar.\n3. Go to **Billing & Connection** and click **Connect Zendesk OAuth** to grant minimal granular permissions (`tickets:read`, `tickets:write`, `webhooks:read`, `webhooks:write`).\n4. Customize your default QA rubric and PII Guardrail rules — every new attachment and solved ticket is now protected automatically.",
+    "parameters": {
+      "backend_url": {
+        "label": "RubricCheck API Endpoint",
+        "helpText": "Default hosted RubricCheck QA service endpoint (leave unchanged unless self-hosting)."
+      }
+    }
+  }
+}
