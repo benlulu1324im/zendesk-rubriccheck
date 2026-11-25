@@ -1,21 +1,20 @@
 # RubricCheck QA — Status
-- **Last Updated:** 2026-11-25 02:30
-- **Current Phase:** Phase 3 (85%)
+- **Last Updated:** 2026-11-25 02:46
+- **Current Phase:** Phase 4 (95%)
 - **Health:** GREEN
-- **Guardrails Check:** Zendesk OAuth 2.0 | Paid Gemini Decisions API (Zero-Training, RAM-only) | Auto-Redact OFF by default (Opt-in >=0.95 + Admin Irreversible Confirm) | Paddle Sandbox ONLY & Shared Account Isolated
+- **Guardrails Check:** Zendesk OAuth 2.0 | Paid Gemini Decisions API (Zero-Training, RAM-only) | Auto-Redact OFF by default (Opt-in >=0.95 + Admin Irreversible Confirm) | Paddle Sandbox ONLY & Shared Account Isolated (0 Live calls)
 - **Completed:**
-  - Monorepo built & verified (`build`, `typecheck`, 11/11 Vitest tests, local ZAF validation & 289KB ZIP)
-  - Live `gemini-decision-1` multimodal verified 3/3 (fake Visa PNG 449ms `p=0.969`, PDF API key 421ms `p=0.980`, clean PNG 325ms, 0 output tokens)
-  - Cloud Run backend deployed (`rubriccheck-qa-00003-nhv`) & GitHub Pages site live (5/5 HTTP 200)
-  - Zendesk OAuth 2.0 + Event Webhook active on `luflow.zendesk.com` with webhook dedup & self-note loop guard
-  - Paddle Sandbox isolated catalog/client token/webhook provisioned; Chrome visual QA passed across 375px–1440px (0 console errors)
+  - Monorepo built & verified (`build`, `typecheck`, 11/11 Vitest tests, official `zcli apps:validate` 0 errors, `zcli apps:create` installed on `luflow.zendesk.com` as `app_id: 1320392`)
+  - Live Zendesk E2E on Ticket #2: real PNG Visa screenshot scanned via `gemini-decision-1` in 274–526ms (`p=0.973–0.985`), native tags (`rc_pii_exposed`, `rc_qa_review`) + internal warning note written, 1-click permanent redaction (`PUT /api/v2/comment_redactions`) scrubbed attachment to `Attachment redacted` + `rc_pii_redacted`
+  - Live Paddle Sandbox E2E: signed `subscription.activated` webhook upgraded `luflow` to `growth` (5,000/mo, 163ms); unrelated Framer template webhook returned silent `200 OK` (`ignored: true`, 145ms); live Sandbox Checkout Overlay verified without touching Default Payment Link
+  - Cloud Run backend live (`rubriccheck-qa-00005-j96`) & GitHub Pages site live (5/5 HTTP 200); Chrome visual QA passed across 375px–1440px (0 console errors)
 - **In Progress:**
-  - Installing Private ZAF App in `luflow.zendesk.com` via `zcli` for live ticket screenshot/PDF PII redaction E2E
-- **Blockers / Waiting on User:** None
+  - Phase 4 Production Launch Gate (awaiting explicit user approval)
+- **Blockers / Waiting on User:** Explicit Hebrew approval for: (1) creating isolated Paddle Live entities (3 products, 6 USD prices, 1 client token, 1 webhook), (2) choosing persistent prod DB (`Firestore rc_*` / named DB / Postgres), and (3) Zendesk Global OAuth & Marketplace submission
 - **Live Links & Artifacts:**
   - Cloud Run: `https://rubriccheck-qa-118913222926.us-central1.run.app`
   - GitHub Pages: `https://benlulu1324im.github.io/zendesk-rubriccheck/`
   - Repo: `https://github.com/benlulu1324im/zendesk-rubriccheck`
-  - Zendesk Sandbox: `https://luflow.zendesk.com` | Paddle Sandbox Webhook: `ntfset_01m88102fgk6yfe4ygjxmrawm8`
+  - Zendesk Sandbox: `https://luflow.zendesk.com` (`app_id: 1320392`) | Paddle Sandbox Webhook: `ntfset_01m88102fgk6yfe4ygjxmrawm8`
   - ZAF Package: `zaf-app/tmp/rubriccheck-qa-1.0.0.zip`
-- **Next Step:** Run `zcli apps:validate` & `zcli apps:create ./zaf-app` on `luflow.zendesk.com`, execute live ticket PII screenshot/PDF redaction E2E + Paddle Sandbox webhook E2E, then stop for Phase 4 Live approval.
+- **Next Step:** Upon approval, provision isolated Paddle Live entities, wire production persistence + `ZENDESK_DEV_MODE=false` + `signedUrls: true`, and submit Global OAuth (`zdg-rubriccheck-qa`) & Zendesk Marketplace listing.
