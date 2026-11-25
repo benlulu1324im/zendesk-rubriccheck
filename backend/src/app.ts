@@ -126,7 +126,17 @@ export function createApp(deps: AppDependencies) {
         config.sessionSecret,
         60 * 60 * 4,
       );
-      const targetUrl = `${config.frontendUrl}/?view=${view}#session=${encodeURIComponent(sessionToken)}`;
+      const incomingQuery = new URL(c.req.url).searchParams;
+      const redirectParams = new URLSearchParams({
+        view,
+        embed: '1',
+        subdomain: tenant.zendeskSubdomain,
+      });
+      const origin = incomingQuery.get('origin');
+      const appGuid = incomingQuery.get('app_guid');
+      if (origin) redirectParams.set('origin', origin);
+      if (appGuid) redirectParams.set('app_guid', appGuid);
+      const targetUrl = `${config.frontendUrl}/?${redirectParams.toString()}#session=${encodeURIComponent(sessionToken)}`;
       return c.redirect(targetUrl, 302);
     } catch (err) {
       return c.text(`Unauthorized ZAF request: ${(err as Error).message}`, 401);
