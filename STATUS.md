@@ -1,0 +1,21 @@
+# RubricCheck QA — Status
+- **Last Updated:** 2026-11-25 02:30
+- **Current Phase:** Phase 3 (85%)
+- **Health:** GREEN
+- **Guardrails Check:** Zendesk OAuth 2.0 | Paid Gemini Decisions API (Zero-Training, RAM-only) | Auto-Redact OFF by default (Opt-in >=0.95 + Admin Irreversible Confirm) | Paddle Sandbox ONLY & Shared Account Isolated
+- **Completed:**
+  - Monorepo built & verified (`build`, `typecheck`, 11/11 Vitest tests, local ZAF validation & 289KB ZIP)
+  - Live `gemini-decision-1` multimodal verified 3/3 (fake Visa PNG 449ms `p=0.969`, PDF API key 421ms `p=0.980`, clean PNG 325ms, 0 output tokens)
+  - Cloud Run backend deployed (`rubriccheck-qa-00003-nhv`) & GitHub Pages site live (5/5 HTTP 200)
+  - Zendesk OAuth 2.0 + Event Webhook active on `luflow.zendesk.com` with webhook dedup & self-note loop guard
+  - Paddle Sandbox isolated catalog/client token/webhook provisioned; Chrome visual QA passed across 375px–1440px (0 console errors)
+- **In Progress:**
+  - Installing Private ZAF App in `luflow.zendesk.com` via `zcli` for live ticket screenshot/PDF PII redaction E2E
+- **Blockers / Waiting on User:** None
+- **Live Links & Artifacts:**
+  - Cloud Run: `https://rubriccheck-qa-118913222926.us-central1.run.app`
+  - GitHub Pages: `https://benlulu1324im.github.io/zendesk-rubriccheck/`
+  - Repo: `https://github.com/benlulu1324im/zendesk-rubriccheck`
+  - Zendesk Sandbox: `https://luflow.zendesk.com` | Paddle Sandbox Webhook: `ntfset_01m88102fgk6yfe4ygjxmrawm8`
+  - ZAF Package: `zaf-app/tmp/rubriccheck-qa-1.0.0.zip`
+- **Next Step:** Run `zcli apps:validate` & `zcli apps:create ./zaf-app` on `luflow.zendesk.com`, execute live ticket PII screenshot/PDF redaction E2E + Paddle Sandbox webhook E2E, then stop for Phase 4 Live approval.
