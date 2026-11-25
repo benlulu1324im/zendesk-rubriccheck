@@ -492,7 +492,11 @@ export function createApp(deps: AppDependencies) {
     }
   });
 
-  // Zendesk Event Webhook Receiver (verifies HMAC-SHA256 signature & triggers async evaluation)
+  // Deduplicate rapid Zendesk event bursts per (tenantId:ticketId) and guard against self-note loops
+  const recentTicketScans = new Map<string, { at: number; attachmentCount: number }>();
+  const inflightTicketScans = new Map<string, Promise<{ attachmentCount: number } | null>>();
+
+  // Zendesk Event Webhook Receiver (verifies HMAC-SHA256 signature & evaluates within Cloud Run request lifecycle)
   app.post('/webhooks/zendesk', async (c) => {
     const rawBody = await c.req.text();
     const subdomain = (c.req.query('subdomain') ?? '').trim().toLowerCase();
@@ -516,11 +520,38 @@ export function createApp(deps: AppDependencies) {
 
     const payload = JSON.parse(rawBody) as {
       type?: string;
-      detail?: { id?: string | number; status?: string };
-      event?: { attachment_id?: string | number; current?: string };
+      subject?: string;
+      detail?: {
+        id?: string | number;
+        ticket_id?: string | number;
+        status?: string;
+        comment?: { body?: string; is_public?: boolean; public?: boolean };
+      };
+      event?: {
+        attachment_id?: string | number;
+        current?: string;
+        comment?: { body?: string; is_public?: boolean; public?: boolean };
+      };
     };
-    const ticketId = payload.detail?.id ? String(payload.detail.id) : null;
+
+    const subjectTicketId = payload.subject?.startsWith('zen:ticket:')
+      ? payload.subject.slice('zen:ticket:'.length)
+      : null;
+    const ticketId = payload.detail?.id
+      ? String(payload.detail.id)
+      : payload.detail?.ticket_id
+        ? String(payload.detail.ticket_id)
+        : subjectTicketId;
     if (!ticketId) return c.json({ ok: true, ignored: true });
+
+    // Never loop on RubricCheck's own internal PII warning / redaction audit notes
+    const commentBody = payload.event?.comment?.body ?? payload.detail?.comment?.body ?? '';
+    if (
+      payload.type === 'zen:event-type:ticket.comment_added' &&
+      commentBody.includes('[RubricCheck PII Guardrail]')
+    ) {
+      return c.json({ ok: true, ignored: true, reason: 'self_note' });
+    }
 
     if (payload.type === 'zen:event-type:ticket.attachment_redacted_from_comment') {
       const attId = payload.event?.attachment_id ? String(payload.event.attachment_id) : null;
@@ -530,8 +561,9 @@ export function createApp(deps: AppDependencies) {
       return c.json({ ok: true, syncedRedaction: true });
     }
 
+    const isAttachmentEvent = payload.type === 'zen:event-type:ticket.attachment_linked_to_comment';
     const shouldEvaluate =
-      payload.type === 'zen:event-type:ticket.attachment_linked_to_comment' ||
+      isAttachmentEvent ||
       payload.type === 'zen:event-type:ticket.comment_added' ||
       (payload.type === 'zen:event-type:ticket.status_changed' &&
         (payload.event?.current === 'solved' ||
@@ -540,13 +572,50 @@ export function createApp(deps: AppDependencies) {
           payload.detail?.status === 'closed'));
 
     if (shouldEvaluate && tenant.oauthConnected) {
-      // Acknowledge immediately (<5s Zendesk SLA) and evaluate asynchronously
-      void orchestrator.evaluateLiveZendeskTicket(tenant, ticketId).catch((err) => {
-        console.error(`[webhook] Evaluation failed for ${subdomain}#${ticketId}:`, err);
-      });
+      const scanKey = `${tenant.id}:${ticketId}`;
+      const existingInflight = inflightTicketScans.get(scanKey);
+      if (existingInflight && !isAttachmentEvent) {
+        return c.json({ ok: true, deduplicated: true });
+      }
+      const recent = recentTicketScans.get(scanKey);
+      if (recent && Date.now() - recent.at < 8_000) {
+        // Allow attachment_linked_to_comment through if the earlier comment_added scan saw 0 attachments
+        if (!isAttachmentEvent || recent.attachmentCount > 0) {
+          return c.json({ ok: true, deduplicated: true });
+        }
+      }
+
+      const evalPromise = orchestrator
+        .evaluateLiveZendeskTicket(tenant, ticketId)
+        .then((outcome) => {
+          recentTicketScans.set(scanKey, {
+            at: Date.now(),
+            attachmentCount: outcome.evaluation.attachmentCount,
+          });
+          return { attachmentCount: outcome.evaluation.attachmentCount };
+        })
+        .catch((err) => {
+          console.error(`[webhook] Evaluation failed for ${subdomain}#${ticketId}:`, err);
+          return null;
+        })
+        .finally(() => {
+          if (inflightTicketScans.get(scanKey) === evalPromise) {
+            inflightTicketScans.delete(scanKey);
+          }
+        });
+      inflightTicketScans.set(scanKey, evalPromise);
+
+      // Await within Zendesk's webhook SLA so Cloud Run keeps CPU active until Gemini + writeback finish
+      const finished = await Promise.race([
+        evalPromise.then((res) => ({ completed: res !== null })),
+        new Promise<{ completed: boolean }>((resolve) =>
+          setTimeout(() => resolve({ completed: false }), 7_500),
+        ),
+      ]);
+      return c.json({ ok: true, queued: true, completed: finished.completed });
     }
 
-    return c.json({ ok: true, queued: shouldEvaluate });
+    return c.json({ ok: true, queued: false });
   });
 
   // Paddle Billing Webhook Receiver (Sandbox in dev, Live only after Phase 4 approval)

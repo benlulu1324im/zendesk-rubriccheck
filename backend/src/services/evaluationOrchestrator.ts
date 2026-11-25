@@ -197,7 +197,8 @@ export class EvaluationOrchestrator {
       }
 
       let internalNote: string | undefined;
-      if (computed.piiDetected && rubric.autoTagConfig.addInternalNoteOnPii) {
+      const alreadyNotified = input.transcriptText.includes('[RubricCheck PII Guardrail]');
+      if (computed.piiDetected && rubric.autoTagConfig.addInternalNoteOnPii && (!alreadyNotified || autoRedactedAttachmentIds.length > 0)) {
         const cats = computed.piiResults
           .filter((r) => r.flagged)
           .map((r) => `${r.label} (${Math.round(r.probability * 100)}%)`)

@@ -27,7 +27,7 @@
             var ticketId = ticketData['ticket.id'] ? '&ticket_id=' + encodeURIComponent(ticketData['ticket.id']) : '';
             var subdomain = ctx.account && ctx.account.subdomain ? '&subdomain=' + encodeURIComponent(ctx.account.subdomain) : '';
             var iframe = document.createElement('iframe');
-            iframe.src = baseUrl + '/?view=' + encodeURIComponent(view) + ticketId + subdomain;
+            iframe.src = baseUrl + '/?view=' + encodeURIComponent(view) + '&embed=1' + ticketId + subdomain;
             iframe.setAttribute('title', 'RubricCheck QA');
             document.body.innerHTML = '';
             document.body.appendChild(iframe);

@@ -27,7 +27,7 @@
       "name": "backend_url",
       "type": "text",
       "required": false,
-      "default": "https://api.rubriccheck.app"
+      "default": "https://rubriccheck-qa-118913222926.us-central1.run.app"
     }
   ]
 }

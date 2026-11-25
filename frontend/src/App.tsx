@@ -10,6 +10,7 @@ function parseBootParams(): {
   view: ViewMode;
   sessionToken: string;
   ticketId: string;
+  subdomain: string;
   hidePreviewBar: boolean;
 } {
   const query = new URLSearchParams(window.location.search);
@@ -17,8 +18,11 @@ function parseBootParams(): {
   const viewParam = query.get('view') === 'sidebar' ? 'sidebar' : 'dashboard';
   const sessionToken = hash.get('session') || '';
   const ticketId = query.get('ticket_id') || '10482';
+  const subdomain = (query.get('subdomain') || 'acme-support')
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '') || 'acme-support';
   const hidePreviewBar = query.get('embed') === '1';
-  return { view: viewParam, sessionToken, ticketId, hidePreviewBar };
+  return { view: viewParam, sessionToken, ticketId, subdomain, hidePreviewBar };
 }
 
 export function App() {
@@ -27,7 +31,7 @@ export function App() {
   const [inZendesk, setInZendesk] = useState(false);
   const [ticketId, setTicketId] = useState(initial.ticketId);
   const [ticketSubject, setTicketSubject] = useState('');
-  const [subdomain, setSubdomain] = useState('acme-support');
+  const [subdomain, setSubdomain] = useState(initial.subdomain);
   const [oauthConnected, setOauthConnected] = useState(false);
   const [api, setApi] = useState<ApiClient | null>(
     initial.sessionToken ? new ApiClient(initial.sessionToken) : null,
@@ -52,7 +56,7 @@ export function App() {
       let client = api;
       if (!client) {
         try {
-          const dev = await ApiClient.bootstrapDevSession('acme-support');
+          const dev = await ApiClient.bootstrapDevSession(initial.subdomain);
           if (!active) return;
           client = new ApiClient(dev.token);
           setSubdomain(dev.subdomain);

@@ -14,11 +14,11 @@
   "location": {
     "support": {
       "ticket_sidebar": {
-        "url": "https://REPLACE_WITH_CLOUD_RUN_URL/zaf/sidebar",
+        "url": "https://rubriccheck-qa-118913222926.us-central1.run.app/zaf/sidebar",
         "flexible": true
       },
       "nav_bar": {
-        "url": "https://REPLACE_WITH_CLOUD_RUN_URL/zaf/dashboard"
+        "url": "https://rubriccheck-qa-118913222926.us-central1.run.app/zaf/dashboard"
       }
     }
   }

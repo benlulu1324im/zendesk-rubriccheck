@@ -159,11 +159,16 @@ export class ZendeskClient {
     const url = path.startsWith('http')
       ? path
       : `https://${tenant.zendeskSubdomain}.zendesk.com${path}`;
+    const baseHeaders: Record<string, string> = {
+      Authorization: `Bearer ${token}`,
+    };
+    if (init.body !== undefined) {
+      baseHeaders['Content-Type'] = 'application/json';
+    }
     return this.fetchImpl(url, {
       ...init,
       headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        ...baseHeaders,
         ...(init.headers ?? {}),
       },
       signal: AbortSignal.timeout(20_000),
@@ -174,34 +179,60 @@ export class ZendeskClient {
     tenant: TenantRecord,
   ): Promise<{ webhookId: string; signingSecret: string }> {
     const endpoint = `${this.config.appBaseUrl}/webhooks/zendesk?subdomain=${encodeURIComponent(tenant.zendeskSubdomain)}`;
-    const createRes = await this.zdFetch(tenant, '/api/v2/webhooks', {
-      method: 'POST',
-      body: JSON.stringify({
-        webhook: {
-          name: 'RubricCheck QA & PII Guardrail',
-          description:
-            'Real-time screenshot/PDF PII guardrail and automated ticket QA rubric evaluation.',
-          status: 'active',
-          endpoint,
-          http_method: 'POST',
-          request_format: 'json',
-          subscriptions: [
-            'zen:event-type:ticket.attachment_linked_to_comment',
-            'zen:event-type:ticket.comment_added',
-            'zen:event-type:ticket.status_changed',
-            'zen:event-type:ticket.attachment_redacted_from_comment',
-          ],
-        },
-      }),
-    });
+    let webhookId: string | null = null;
 
-    if (!createRes.ok) {
-      const txt = await createRes.text().catch(() => '');
-      throw new Error(`Zendesk webhook provisioning failed (${createRes.status}): ${txt.slice(0, 300)}`);
+    // Reuse an existing RubricCheck webhook targeting the same endpoint to avoid duplicates on OAuth re-connect
+    try {
+      const listRes = await this.zdFetch(
+        tenant,
+        '/api/v2/webhooks?filter[name_contains]=RubricCheck',
+        { method: 'GET' },
+      );
+      if (listRes.ok) {
+        const listData = (await listRes.json()) as {
+          webhooks?: Array<{ id: string; endpoint?: string; status?: string }>;
+        };
+        const existing = (listData.webhooks ?? []).find(
+          (w) => w.endpoint === endpoint && w.status === 'active',
+        );
+        if (existing) {
+          webhookId = existing.id;
+        }
+      }
+    } catch {
+      // Fall through and create a fresh webhook
     }
 
-    const created = (await createRes.json()) as { webhook: { id: string } };
-    const webhookId = created.webhook.id;
+    if (!webhookId) {
+      const createRes = await this.zdFetch(tenant, '/api/v2/webhooks', {
+        method: 'POST',
+        body: JSON.stringify({
+          webhook: {
+            name: 'RubricCheck QA & PII Guardrail',
+            description:
+              'Real-time screenshot/PDF PII guardrail and automated ticket QA rubric evaluation.',
+            status: 'active',
+            endpoint,
+            http_method: 'POST',
+            request_format: 'json',
+            subscriptions: [
+              'zen:event-type:ticket.attachment_linked_to_comment',
+              'zen:event-type:ticket.comment_added',
+              'zen:event-type:ticket.status_changed',
+              'zen:event-type:ticket.attachment_redacted_from_comment',
+            ],
+          },
+        }),
+      });
+
+      if (!createRes.ok) {
+        const txt = await createRes.text().catch(() => '');
+        throw new Error(`Zendesk webhook provisioning failed (${createRes.status}): ${txt.slice(0, 300)}`);
+      }
+
+      const created = (await createRes.json()) as { webhook: { id: string } };
+      webhookId = created.webhook.id;
+    }
 
     const secretRes = await this.zdFetch(tenant, `/api/v2/webhooks/${webhookId}/signing_secret`, {
       method: 'GET',
