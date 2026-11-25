@@ -214,8 +214,11 @@ export class EvaluationOrchestrator {
           additionalTags: tags,
           internalNote,
         });
-      } catch {
-        // Non-fatal: evaluation is already persisted and visible in sidebar
+      } catch (writeErr) {
+        console.warn(
+          `[zendesk] Writeback failed for ${tenant.zendeskSubdomain}#${input.ticketId}:`,
+          (writeErr as Error).message,
+        );
       }
     }
 

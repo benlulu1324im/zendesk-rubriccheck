@@ -333,13 +333,8 @@ export class ZendeskClient {
         if (att.size > maxSingle || totalMediaBytes + att.size > MAX_TOTAL_BYTES) continue;
 
         try {
-          const mediaRes = await this.zdFetch(tenant, att.content_url, {
-            method: 'GET',
-            headers: { Accept: '*/*' },
-          });
-          if (!mediaRes.ok) continue;
-          const bytes = Buffer.from(await mediaRes.arrayBuffer());
-          if (bytes.byteLength > maxSingle || totalMediaBytes + bytes.byteLength > MAX_TOTAL_BYTES) {
+          const bytes = await this.downloadAttachmentBytes(tenant, att.content_url, maxSingle);
+          if (!bytes || totalMediaBytes + bytes.byteLength > MAX_TOTAL_BYTES) {
             continue;
           }
           totalMediaBytes += bytes.byteLength;
@@ -351,8 +346,11 @@ export class ZendeskClient {
             mimeType: mime === 'image/jpg' ? 'image/jpeg' : mime,
             bytes,
           });
-        } catch {
-          // Skip unreadable attachment without aborting ticket evaluation
+        } catch (attErr) {
+          console.warn(
+            `[zendesk] Failed to download attachment ${att.id} (${att.file_name}) on ticket #${ticketId}:`,
+            (attErr as Error).message,
+          );
         }
       }
     }
@@ -368,30 +366,106 @@ export class ZendeskClient {
     };
   }
 
+  /**
+   * Safely downloads a Zendesk attachment into transient RAM.
+   * Uses manual redirects so the Zendesk OAuth Bearer token is NEVER forwarded to
+   * external S3 / zdusercontent.com pre-signed storage URLs (which reject foreign auth headers).
+   * Falls back to unauthenticated token-URL download when scoped tokens receive 401/403 on public token URLs.
+   */
+  private async downloadAttachmentBytes(
+    tenant: TenantRecord,
+    contentUrl: string,
+    maxBytes: number,
+  ): Promise<Buffer | null> {
+    const token = await this.getValidAccessToken(tenant);
+
+    // Hop 1: Authenticated request with manual redirect handling (supports Private Attachments / Secure Downloads)
+    let res = await this.fetchImpl(contentUrl, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: '*/*',
+      },
+      redirect: 'manual',
+      signal: AbortSignal.timeout(20_000),
+    });
+
+    // Follow 30x redirect WITHOUT forwarding Authorization header to external CDN/S3
+    if (res.status >= 300 && res.status < 400) {
+      const location = res.headers.get('location');
+      if (location) {
+        const nextUrl = new URL(location, contentUrl).toString();
+        res = await this.fetchImpl(nextUrl, {
+          method: 'GET',
+          headers: { Accept: '*/*' },
+          redirect: 'follow',
+          signal: AbortSignal.timeout(20_000),
+        });
+      }
+    }
+
+    // Fallback: Zendesk token-signed public attachment URLs reject scoped OAuth Bearer headers with 401/403
+    if (res.status === 401 || res.status === 403) {
+      res = await this.fetchImpl(contentUrl, {
+        method: 'GET',
+        headers: { Accept: '*/*' },
+        redirect: 'follow',
+        signal: AbortSignal.timeout(20_000),
+      });
+    }
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status} fetching attachment`);
+    }
+
+    const bytes = Buffer.from(await res.arrayBuffer());
+    if (bytes.byteLength === 0 || bytes.byteLength > maxBytes) {
+      return null;
+    }
+    return bytes;
+  }
+
   async applyTicketTagsAndNote(
     tenant: TenantRecord,
     ticketId: string,
     opts: { additionalTags: string[]; internalNote?: string },
   ): Promise<void> {
-    const ticketPayload: Record<string, unknown> = {};
+    // Use Zendesk's dedicated Add Tags endpoint so existing ticket tags are preserved (PUT /tickets/{id} ignores additional_tags)
     if (opts.additionalTags.length > 0) {
-      ticketPayload.additional_tags = opts.additionalTags;
+      const tagRes = await this.zdFetch(
+        tenant,
+        `/api/v2/tickets/${encodeURIComponent(ticketId)}/tags.json`,
+        {
+          method: 'PUT',
+          body: JSON.stringify({ tags: opts.additionalTags }),
+        },
+      );
+      if (!tagRes.ok) {
+        const txt = await tagRes.text().catch(() => '');
+        throw new Error(`Zendesk add tags failed (${tagRes.status}): ${txt.slice(0, 300)}`);
+      }
     }
-    if (opts.internalNote) {
-      ticketPayload.comment = {
-        body: opts.internalNote,
-        public: false,
-      };
-    }
-    if (Object.keys(ticketPayload).length === 0) return;
 
-    const res = await this.zdFetch(tenant, `/api/v2/tickets/${encodeURIComponent(ticketId)}.json`, {
-      method: 'PUT',
-      body: JSON.stringify({ ticket: ticketPayload }),
-    });
-    if (!res.ok) {
-      const txt = await res.text().catch(() => '');
-      throw new Error(`Zendesk ticket update failed (${res.status}): ${txt.slice(0, 300)}`);
+    if (opts.internalNote) {
+      const noteRes = await this.zdFetch(
+        tenant,
+        `/api/v2/tickets/${encodeURIComponent(ticketId)}.json`,
+        {
+          method: 'PUT',
+          body: JSON.stringify({
+            ticket: {
+              comment: {
+                body: opts.internalNote,
+                public: false,
+              },
+            },
+          }),
+        },
+      );
+      if (!noteRes.ok) {
+        const txt = await noteRes.text().catch(() => '');
+        throw new Error(`Zendesk internal note failed (${noteRes.status}): ${txt.slice(0, 300)}`);
+      }
     }
   }
 
